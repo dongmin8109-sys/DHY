@@ -28,6 +28,20 @@ npm run dev
 
 `node scripts/smoke-test.mjs`는 **빈 로컬 DB**에서만 실행한다. 임시 계정으로 인증, 접근 통제, 초기 데이터, 수정/삭제를 검증한다. 실제 배포 DB에는 연결하지 않는다.
 
+## Cloudflare 배포 검증
+
+`npm run build`만으로 배포 완료를 판단하지 않는다. GitHub에서 **프로젝트 루트**를 빌드하고 생성된 `dist/server/index.js`를 Worker 진입점으로, `dist/client`를 정적 자산으로 배포해야 한다. 원본 `app/page.tsx`를 Worker 스크립트로 직접 올리거나 `dist/server/index.js`만 단독 업로드하면 App Router 모듈 구성이 누락된다.
+
+```powershell
+npm ci
+npm run build
+npm run test:worker
+npm run deploy:cloudflare
+npm run test:live -- https://dhy.dongmin8109.workers.dev
+```
+
+`test:worker`는 격리된 로컬 Worker를 실행하여 페이지 기본 export, `/api/session`, D1 초기 계정 생성, R2 파일 왕복을 실제 HTTP 요청으로 확인한다. `deploy:cloudflare`는 빌드 결과의 Worker 진입점과 기존 운영 D1/R2 바인딩을 확인한 뒤 `dist/server/wrangler.json`을 명시하여 배포한다. Cloudflare GitHub 설정의 배포 명령을 `npm run deploy:cloudflare`로 변경해야 한다. `test:live`는 공개 배포 주소의 페이지와 API 응답을 확인한다. 운영 D1 데이터와 R2 파일을 초기화하거나 삭제하지 않는다. `node_modules.zip`, `node_modules`, `.wrangler`, `dist`는 GitHub 소스 업로드 대상이 아니다.
+
 ## 데이터 원칙
 
 세계관 확정 정보는 [CANON.md](CANON.md)에 기록한다. 인물 사진은 현재 UI에서 `사진 기밀`로 표시한다. 창작자가 새로 제공한 박소민 사진 원본은 `pending-media/park.png`에 보관했으며 아직 공개 화면이나 DB에는 연결하지 않았다. 사건 세부 내용, 위험등급 분류 등 미제공 항목은 빈 값 또는 `미확인`으로 둔다. 관리번호는 세계관 내용이 아닌 전산 관리용 식별자다.

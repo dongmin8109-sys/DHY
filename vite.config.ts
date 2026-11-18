@@ -6,8 +6,8 @@ import { configureToolEnvironment } from "./scripts/tool-environment.mjs";
 import { sites } from "./scripts/vite/sites-vite-plugin";
 import { connectorPreview } from "./scripts/vite/connector-preview-plugin.mjs";
 
-const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
-  "7ffb0575-335f-45d7-9eb1-17cbca72626b";
+// Existing DHY production resources. Keep these IDs when rebuilding the Worker.
+const DHY_DATABASE_ID = "7ffb0575-335f-45d7-9eb1-17cbca72626b";
 
 const { d1, r2 } = hostingConfig;
 
@@ -16,6 +16,7 @@ const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
 const managedLinux = readExecutionProfile() === "managed-linux";
 
 const localBindingConfig = {
+  name: "dhy",
   main: "./worker/index.ts",
   compatibility_flags: ["nodejs_compat"],
   d1_databases: d1
@@ -23,7 +24,7 @@ const localBindingConfig = {
         {
           binding: d1,
           database_name: "site-creator-d1",
-          database_id: SITE_CREATOR_PLACEHOLDER_DATABASE_ID,
+          database_id: DHY_DATABASE_ID,
         },
       ]
     : [],
